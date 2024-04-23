@@ -1,0 +1,83 @@
+import tkinter as tk
+from gpiozero import PWMLED
+
+# Setup PWM LEDs
+red = PWMLED(17)
+green = PWMLED(27)
+blue = PWMLED(22)
+
+# Initialise the LEDs to off
+red.value = 0
+green.value = 0
+blue.value = 0
+
+def update_intensity(slider_value, led=None):
+    # Set the brightness of the specified LED, or all if None
+    intensity = float(slider_value)
+    if led:
+        led.value = intensity
+    else:
+        red.value = intensity
+        green.value = intensity
+        blue.value = intensity
+        red_slider.set(slider_value)
+        green_slider.set(slider_value)
+        blue_slider.set(slider_value)
+
+def toggle_lights():
+    # If any LED is on, turn all off. Otherwise, turn all on to the last slider value.
+    if red.value > 0 or green.value > 0 or blue.value > 0:
+        red.off()
+        green.off()
+        blue.off()
+        power_button.config(text="Turn On")
+    else:
+        update_intensity(master_slider.get())
+        power_button.config(text="Turn Off")
+
+def start_light_show():
+    # A simple light show that changes LED intensities
+    for i in range(10):
+        update_intensity(i/10.0)
+        root.after(200)
+    for i in range(10, -1, -1):
+        update_intensity(i/10.0)
+        root.after(200)
+    # Reset the button text after the show
+    light_show_button.config(text="Start Light Show")
+
+# Setup the GUI
+root = tk.Tk()
+root.title("LED Control Panel")
+
+# Master slider for controlling the intensity of all LEDs
+master_slider = tk.Scale(root, from_=0, to=1, resolution=0.01, orient='horizontal', label='Master Intensity',
+                         command=update_intensity)
+master_slider.pack()
+
+# Individual sliders for controlling the intensity of each LED
+red_slider = tk.Scale(root, from_=0, to=1, resolution=0.01, orient='horizontal', label='Red Intensity',
+                      command=lambda value: update_intensity(value, red))
+red_slider.pack()
+
+green_slider = tk.Scale(root, from_=0, to=1, resolution=0.01, orient='horizontal', label='Green Intensity',
+                        command=lambda value: update_intensity(value, green))
+green_slider.pack()
+
+blue_slider = tk.Scale(root, from_=0, to=1, resolution=0.01, orient='horizontal', label='Blue Intensity',
+                       command=lambda value: update_intensity(value, blue))
+blue_slider.pack()
+
+# Button to turn on/off all LEDs
+power_button = tk.Button(root, text="Turn On", command=toggle_lights)
+power_button.pack()
+
+# Button to start the light show
+light_show_button = tk.Button(root, text="Start Light Show", command=start_light_show)
+light_show_button.pack()
+
+# Button to exit the GUI
+exit_button = tk.Button(root, text="Exit", command=root.destroy)
+exit_button.pack()
+
+root.mainloop()
